@@ -382,7 +382,77 @@
 </script>
 
 <svelte:head>
-	<title>Spider Solitaire</title>
+	<!-- Primary Meta Tags -->
+	<title>Spider Solitaire - Free Online Card Game | Play Now</title>
+	<meta name="title" content="Spider Solitaire - Free Online Card Game | Play Now" />
+	<meta name="description" content="Play Spider Solitaire online for free! Classic card game with 1, 2, or 4 suit modes. Features smooth animations, hints, undo, and works perfectly on mobile. No downloads or registration required." />
+	<meta name="keywords" content="spider solitaire, solitaire, card game, free games, online games, patience, klondike, spider solitaire free, spider solitaire online, card games" />
+	<meta name="author" content="Cosmin" />
+	
+	<!-- Open Graph / Facebook -->
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://spidersolitaire.cosmin.cc/" />
+	<meta property="og:title" content="Spider Solitaire - Free Online Card Game" />
+	<meta property="og:description" content="Play Spider Solitaire online for free! Choose from 1, 2, or 4 suit difficulty modes. Smooth animations, hints, and undo features. Perfect for mobile and desktop." />
+	<meta property="og:image" content="https://spidersolitaire.cosmin.cc/web-app-manifest-512x512.png" />
+	<meta property="og:image:width" content="512" />
+	<meta property="og:image:height" content="512" />
+	<meta property="og:site_name" content="Spider Solitaire" />
+	<meta property="og:locale" content="en_US" />
+	
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:url" content="https://spidersolitaire.cosmin.cc/" />
+	<meta name="twitter:title" content="Spider Solitaire - Free Online Card Game" />
+	<meta name="twitter:description" content="Play Spider Solitaire online for free! Choose from 1, 2, or 4 suit difficulty modes. Perfect for mobile and desktop." />
+	<meta name="twitter:image" content="https://spidersolitaire.cosmin.cc/web-app-manifest-512x512.png" />
+	
+	<!-- Additional SEO Tags -->
+	<meta name="application-name" content="Spider Solitaire" />
+	<meta name="apple-mobile-web-app-title" content="Spider Solitaire" />
+	<link rel="alternate" hreflang="en" href="https://spidersolitaire.cosmin.cc/" />
+	
+	<!-- JSON-LD Structured Data -->
+	{@html `<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "WebApplication",
+		"name": "Spider Solitaire",
+		"url": "https://spidersolitaire.cosmin.cc/",
+		"description": "Play Spider Solitaire online for free! Classic card game with multiple difficulty levels featuring smooth animations, hints, and undo functionality.",
+		"applicationCategory": "Game",
+		"genre": ["Card Game", "Solitaire", "Puzzle"],
+		"operatingSystem": "Any",
+		"browserRequirements": "Requires JavaScript. Requires HTML5.",
+		"offers": {
+			"@type": "Offer",
+			"price": "0",
+			"priceCurrency": "USD"
+		},
+		"author": {
+			"@type": "Person",
+			"name": "Cosmin",
+			"url": "https://cosmin.cc"
+		},
+		"creator": {
+			"@type": "Person",
+			"name": "Cosmin",
+			"url": "https://cosmin.cc"
+		},
+		"screenshot": "https://spidersolitaire.cosmin.cc/web-app-manifest-512x512.png",
+		"featureList": [
+			"3 difficulty modes (1, 2, or 4 suits)",
+			"Smooth card animations",
+			"Hint system",
+			"Unlimited undo",
+			"Mobile-friendly design",
+			"No registration required",
+			"Free to play"
+		],
+		"inLanguage": "en-US",
+		"isAccessibleForFree": true
+	}
+	<\/script>`}
 </svelte:head>
 
 <div class="game-container">

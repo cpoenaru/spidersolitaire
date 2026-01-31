@@ -337,7 +337,13 @@
 		<div class="left-section">
 			<!-- Stock piles -->
 			<div class="stock-area" id="stock-pile">
-				<button class="stock-pile" onclick={handleDeal} disabled={!game.canDeal || isDealing} title="Deal cards">
+				<button
+					class="stock-pile"
+					class:hint-deal={game.hint?.sourcePile === -1}
+					onclick={handleDeal}
+					disabled={!game.canDeal || isDealing}
+					title="Deal cards"
+				>
 					{#each Array(Math.min(stockDecks, 5)) as _, i}
 						<div class="stock-deck" style="left: {i * 2}px; top: {i * 2}px;"></div>
 					{/each}
@@ -626,6 +632,23 @@
 	.stock-pile:disabled {
 		cursor: not-allowed;
 		opacity: 0.5;
+	}
+	
+	.stock-pile.hint-deal {
+		border-color: #ffd700;
+		box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4);
+		animation: hintGlow 2s ease-in-out infinite;
+	}
+	
+	@keyframes hintGlow {
+		0%, 100% {
+			border-color: #ffd700;
+			box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4);
+		}
+		50% {
+			border-color: #ffed4e;
+			box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.6);
+		}
 	}
 	
 	.stock-deck {

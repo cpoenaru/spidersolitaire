@@ -303,6 +303,21 @@ class SpiderSolitaireGame {
 		const moves = findMeaningfulMoves(this.state);
 		
 		if (moves.length === 0) {
+			// If no card moves but we can deal, suggest dealing
+			if (this.canDeal) {
+				this.hint = {
+					sourcePile: -1, // Special value for "deal" hint
+					cardIndex: -1,
+					targetPile: -1,
+					priority: 100,
+					reason: 'Deal new cards from stock'
+				};
+				
+				// Auto-clear hint after 5 seconds
+				setTimeout(() => {
+					this.hint = null;
+				}, 5000);
+			}
 			return;
 		}
 		

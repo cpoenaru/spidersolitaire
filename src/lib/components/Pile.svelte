@@ -4,6 +4,9 @@
 	import { flip } from 'svelte/animate';
 	import { cubicOut } from 'svelte/easing';
 	
+	// Module-level variable to track the current drag source
+	let currentDragSourcePile: number | null = null;
+	
 	interface Props {
 		pile: Pile;
 		pileIndex: number;
@@ -22,10 +25,9 @@
 	
 	let { pile, pileIndex, selectedPile, selectedCardIndex, onCardClick, onPileClick, onMouseDown, onDragStart, onDragEnd, hiddenCardIds = [], disableAnimation = false, hintCardIndex, isHintTarget = false }: Props = $props();
 	
-	let isDragOver = $state(false);
-	
 	function handleDragStart(cardIndex: number) {
 		return (e: DragEvent) => {
+			currentDragSourcePile = pileIndex;
 			if (e.dataTransfer) {
 				e.dataTransfer.effectAllowed = 'move';
 				e.dataTransfer.setData('application/json', JSON.stringify({
@@ -38,7 +40,13 @@
 	}
 	
 	function handleDragEndEvent() {
+		// Reset drag state when drag ends
+		currentDragSourcePile = null;
 		onDragEnd?.();
+	}
+	
+	function handleDragEnter(e: DragEvent) {
+		e.preventDefault();
 	}
 	
 	function handleDragOver(e: DragEvent) {
@@ -46,17 +54,16 @@
 		if (e.dataTransfer) {
 			e.dataTransfer.dropEffect = 'move';
 		}
-		isDragOver = true;
 	}
 	
-	function handleDragLeave() {
-		isDragOver = false;
+	function handleDragLeave(e: DragEvent) {
+		e.preventDefault();
 	}
 	
 	function handleDrop(e: DragEvent) {
 		console.log('handleDrop called', { pileIndex });
 		e.preventDefault();
-		isDragOver = false;
+		currentDragSourcePile = null;
 		
 		if (e.dataTransfer) {
 			const data = e.dataTransfer.getData('application/json');
@@ -86,11 +93,11 @@
 
 <div
 	class="pile"
-	class:drag-over={isDragOver}
 	class:hint-target={isHintTarget}
 	role="button"
 	tabindex="0"
 	onclick={() => onPileClick(pileIndex)}
+	ondragenter={handleDragEnter}
 	ondragover={handleDragOver}
 	ondragleave={handleDragLeave}
 	ondrop={handleDrop}
@@ -155,12 +162,6 @@
 		border-radius: 8px;
 		cursor: pointer;
 		overflow: visible;
-	}
-	
-	.pile.drag-over {
-		background: #1a1a1a;
-		border-color: #666;
-		border-style: solid;
 	}
 	
 	.pile.hint-target {

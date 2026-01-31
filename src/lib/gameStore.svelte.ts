@@ -397,13 +397,11 @@ let game = new SpiderSolitaireGame();
 if (import.meta.hot) {
 	// Force complete reinitialization on HMR
 	import.meta.hot.accept(() => {
-		console.log('HMR: Creating fresh game instance');
 		game = new SpiderSolitaireGame();
 	});
 	
 	// Dispose of old module data
 	import.meta.hot.dispose(() => {
-		console.log('HMR: Disposing old game instance');
 	});
 }
 

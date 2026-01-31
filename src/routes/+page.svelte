@@ -25,6 +25,14 @@
 	}>>([]);
 	let justArrivedCardIds = $state<number[]>([]);
 	
+	// Drag preview state
+	let showDragPreview = $state(false);
+	let dragPreviewX = $state(0);
+	let dragPreviewY = $state(0);
+	let dragPreviewCards = $state<CardType[]>([]);
+	let draggingPileIndex = $state<number | null>(null);
+	let draggingCardIndex = $state<number | null>(null);
+	
 	let mouseDownTime = 0;
 	let isMouseDragging = false;
 	let showNewGameConfirm = $state(false);
@@ -81,14 +89,35 @@
 	function handleDragStart(pileIndex: number, cardIndex: number) {
 		console.log('handleDragStart called', { pileIndex, cardIndex });
 		isMouseDragging = true;
-		// Don't select cards or trigger any logic during drag start
-		// Just set the drag flag to prevent click handler from firing
+		draggingPileIndex = pileIndex;
+		draggingCardIndex = cardIndex;
+		
+		// Set up drag preview
+		const pile = game.state.tableau[pileIndex];
+		const cardsToMove = pile.cards.slice(cardIndex);
+		dragPreviewCards = cardsToMove;
+		showDragPreview = true;
+		
+		// Track mouse movement for drag preview
+		window.addEventListener('dragover', handleDragMove);
+	}
+	
+	function handleDragMove(e: DragEvent) {
+		if (showDragPreview && e.clientX !== 0 && e.clientY !== 0) {
+			dragPreviewX = e.clientX;
+			dragPreviewY = e.clientY;
+		}
 	}
 	
 	function handleDragEnd() {
 		console.log('handleDragEnd called');
 		// Reset the dragging flag immediately
 		isMouseDragging = false;
+		showDragPreview = false;
+		dragPreviewCards = [];
+		draggingPileIndex = null;
+		draggingCardIndex = null;
+		window.removeEventListener('dragover', handleDragMove);
 	}
 	
 	async function handlePileClick(pileIndex: number) {
@@ -497,6 +526,8 @@
 						disableAnimation={isTargetPile}
 						hintCardIndex={hintCardIndex ?? undefined}
 						isHintTarget={isHintTarget}
+						{draggingPileIndex}
+						{draggingCardIndex}
 					/>
 				</div>
 			{/each}
@@ -567,12 +598,30 @@
 				{/if}
 			{/each}
 		</div>
-	{/if}
-	
-	<footer>
-		<a href="https://cosmin.cc" target="_blank" rel="noopener noreferrer">cosmin.cc</a>
-	</footer>
-</div>
+		{/if}
+		
+		<!-- Drag preview overlay -->
+		{#if showDragPreview && dragPreviewCards.length > 0}
+			<div
+				class="drag-preview"
+				style="left: {dragPreviewX - 42}px; top: {dragPreviewY - 15}px;"
+			>
+				{#each dragPreviewCards as card, idx}
+					<div class="drag-preview-card" style="top: {idx * 35}px;">
+						<Card
+							suit={card.suit}
+							rank={card.rank}
+							faceUp={card.faceUp}
+						/>
+					</div>
+				{/each}
+			</div>
+		{/if}
+		
+		<footer>
+			<a href="https://cosmin.cc" target="_blank" rel="noopener noreferrer">cosmin.cc</a>
+		</footer>
+	</div>
 
 <style>
 	:global(body) {
@@ -1231,5 +1280,20 @@
 		.tableau {
 			flex-wrap: wrap;
 		}
+	}
+	
+	.drag-preview {
+		position: fixed;
+		pointer-events: none;
+		z-index: 10000;
+		width: 85px;
+		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+	}
+	
+	.drag-preview-card {
+		position: absolute;
+		left: 0;
+		width: 85px;
+		height: 130px;
 	}
 </style>

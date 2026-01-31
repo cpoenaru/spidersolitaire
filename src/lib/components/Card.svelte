@@ -95,10 +95,16 @@
 		justify-content: stretch;
 		font-weight: bold;
 		font-size: 18px;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.4);
 		padding: 0;
 		margin: 0;
 		box-sizing: border-box;
+		transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+	}
+	
+	.card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7), 0 3px 6px rgba(0, 0, 0, 0.5);
 	}
 	
 	.card.face-down {

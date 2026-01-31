@@ -99,8 +99,13 @@
 	
 	function handleDragMove(e: DragEvent) {
 		if (showDragPreview && e.clientX !== 0 && e.clientY !== 0) {
-			dragPreviewX = e.clientX;
-			dragPreviewY = e.clientY;
+			// Constrain drag preview to window bounds with padding
+			const padding = 20;
+			const previewWidth = 110;
+			const previewHeight = 160 + (dragPreviewCards.length - 1) * 35;
+			
+			dragPreviewX = Math.max(padding, Math.min(e.clientX, window.innerWidth - previewWidth - padding));
+			dragPreviewY = Math.max(padding, Math.min(e.clientY, window.innerHeight - previewHeight - padding));
 		}
 	}
 	
@@ -192,7 +197,7 @@
 			sourcePile: sourcePileIndex,
 			sourceIndex: cardIndex + i,
 			targetPile: targetPileIndex,
-			targetOffset: (targetPileCardCount + i) * 35,
+			targetOffset: (targetPileCardCount + i) * 40,
 			progress: 0
 		}));
 		
@@ -202,8 +207,8 @@
 		// Complete the move immediately but hide the arrived cards
 		game.moveCards(targetPileIndex);
 		
-		// Animate all cards together
-		const duration = 100;
+		// Animate all cards together with smoother timing
+		const duration = 200;
 		const startTime = Date.now();
 		
 		const animate = () => {
@@ -298,7 +303,7 @@
 	
 	async function animateCard(index: number) {
 		return new Promise<void>(resolve => {
-			const duration = 80;
+			const duration = 120;
 			const startTime = Date.now();
 			
 			const animate = () => {
@@ -565,7 +570,7 @@
 					{@const startX = stockRect.left}
 					{@const startY = stockRect.top}
 					{@const pile = game.state.tableau[dealCard.targetPile]}
-					{@const lastCardOffset = (pile.cards.length - 1) * 35}
+					{@const lastCardOffset = (pile.cards.length - 1) * 40}
 					{@const endX = pileRect.left + 3}
 					{@const endY = pileRect.top + lastCardOffset}
 					{@const currentX = startX + (endX - startX) * dealCard.progress}
@@ -595,7 +600,7 @@
 				{@const sourceRect = sourcePileEl?.getBoundingClientRect()}
 				{@const targetRect = targetPileEl?.getBoundingClientRect()}
 				{#if sourceRect && targetRect}
-					{@const sourceCardOffset = flyingCard.sourceIndex * 35}
+					{@const sourceCardOffset = flyingCard.sourceIndex * 40}
 					{@const startX = sourceRect.left + 3}
 					{@const startY = sourceRect.top + sourceCardOffset}
 					
@@ -626,7 +631,7 @@
 				style="left: {dragPreviewX - 55}px; top: {dragPreviewY - 15}px;"
 			>
 				{#each dragPreviewCards as card, idx}
-					<div class="drag-preview-card" style="top: {idx * 35}px;">
+					<div class="drag-preview-card" style="top: {idx * 40}px;">
 						<Card
 							suit={card.suit}
 							rank={card.rank}
@@ -650,6 +655,7 @@
 		min-height: 100vh;
 		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 		color: #fff;
+		overflow-x: hidden;
 	}
 	
 	.game-container {
@@ -658,6 +664,7 @@
 		padding: 20px 15px;
 		position: relative;
 		overflow: visible;
+		min-width: 320px;
 	}
 	
 	.top-bar {
@@ -995,6 +1002,7 @@
 		margin-top: 20px;
 		min-height: 700px;
 		overflow: visible;
+		width: 100%;
 	}
 	
 	.pile-wrapper {
@@ -1277,11 +1285,12 @@
 		}
 		
 		.tableau {
-			gap: 5px;
+			gap: 6px;
 		}
 		
 		.completed-sequences {
 			gap: 5px;
+			flex-wrap: wrap;
 		}
 		
 		.completed-card {
@@ -1289,15 +1298,152 @@
 			height: 90px;
 			font-size: 32px;
 		}
+		
+		:global(.card) {
+			height: 140px;
+		}
+		
+		.pile-wrapper {
+			min-width: 90px;
+		}
+	}
+	
+	@media (max-width: 900px) {
+		.game-container {
+			padding: 15px 10px;
+		}
+		
+		h1 {
+			font-size: 26px;
+		}
+		
+		.tableau {
+			gap: 4px;
+		}
+		
+		.completed-sequences {
+			gap: 4px;
+		}
+		
+		.completed-card {
+			width: 55px;
+			height: 75px;
+			font-size: 28px;
+		}
+		
+		.stock-pile {
+			width: 80px;
+			height: 110px;
+		}
+		
+		:global(.card) {
+			height: 120px;
+		}
+		
+		.pile-wrapper {
+			min-width: 75px;
+		}
 	}
 	
 	@media (max-width: 768px) {
 		h1 {
-			font-size: 24px;
+			font-size: 22px;
+		}
+		
+		.difficulty-btn {
+			padding: 5px 12px;
+			font-size: 12px;
+		}
+		
+		.btn {
+			padding: 6px 12px;
+			font-size: 13px;
+		}
+		
+		.value {
+			font-size: 20px;
 		}
 		
 		.tableau {
-			flex-wrap: wrap;
+			min-height: 500px;
+		}
+	}
+	
+	@media (max-width: 600px) {
+		.game-container {
+			padding: 10px 5px;
+		}
+		
+		h1 {
+			font-size: 20px;
+			margin: 0 0 8px 0;
+		}
+		
+		.left-section {
+			flex-direction: column;
+			gap: 10px;
+			align-items: center;
+		}
+		
+		.completed-sequences {
+			gap: 3px;
+		}
+		
+		.completed-card {
+			width: 45px;
+			height: 60px;
+			font-size: 22px;
+		}
+		
+		.stock-pile {
+			width: 70px;
+			height: 95px;
+		}
+		
+		.tableau {
+			gap: 3px;
+			min-height: 450px;
+		}
+		
+		:global(.card) {
+			height: 100px;
+		}
+		
+		.pile-wrapper {
+			min-width: 60px;
+		}
+		
+		.difficulty-btn {
+			padding: 4px 10px;
+			font-size: 11px;
+		}
+		
+		.btn {
+			padding: 5px 10px;
+			font-size: 12px;
+		}
+		
+		.controls {
+			gap: 6px;
+		}
+		
+		.confirm-content,
+		.no-moves-content {
+			min-width: 280px;
+			padding: 30px 20px;
+		}
+		
+		.confirm-content h2,
+		.no-moves-content h2 {
+			font-size: 22px;
+		}
+		
+		.win-content {
+			padding: 30px 20px;
+		}
+		
+		.win-content h2 {
+			font-size: 28px;
 		}
 	}
 	

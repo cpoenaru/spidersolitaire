@@ -123,7 +123,7 @@
 				class:hidden={hiddenCardIds.includes(card.id)}
 				class:hint-card={hintCardIndex !== undefined && index >= hintCardIndex}
 				class:dragging={draggingPileIndex === pileIndex && draggingCardIndex !== null && index >= draggingCardIndex}
-				style="top: {index * 35}px;"
+				style="top: {index * 40}px;"
 			>
 				<Card
 					suit={card.suit}
@@ -145,8 +145,8 @@
 				class:hidden={hiddenCardIds.includes(card.id)}
 				class:hint-card={hintCardIndex !== undefined && index >= hintCardIndex}
 				class:dragging={draggingPileIndex === pileIndex && draggingCardIndex !== null && index >= draggingCardIndex}
-				style="top: {index * 35}px;"
-				animate:flip={{ duration: 200, easing: cubicOut }}
+				style="top: {index * 40}px;"
+				animate:flip={{ duration: 300, easing: cubicOut }}
 			>
 				<Card
 					suit={card.suit}

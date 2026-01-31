@@ -42,17 +42,14 @@
 	let pendingDifficulty = $state<Difficulty | undefined>(undefined);
 	
 	function handleMouseDown() {
-		console.log('handleMouseDown called');
 		mouseDownTime = Date.now();
 		isMouseDragging = false;
 	}
 	
 	async function handleCardClick(pileIndex: number, cardIndex: number, skipAutoMove = false) {
-		console.log('handleCardClick called', { pileIndex, cardIndex, isMouseDragging, skipAutoMove });
 		
 		// If mouse was dragging, ignore the click
 		if (isMouseDragging) {
-			console.log('Ignoring click because was dragging');
 			isMouseDragging = false;
 			return;
 		}
@@ -69,28 +66,23 @@
 		
 		// If skipAutoMove is true (from drag & drop), just select
 		if (skipAutoMove) {
-			console.log('Just selecting card (skip auto-move)');
 			game.selectCards(pileIndex, cardIndex, true);
 			return;
 		}
 		
 		// Find best move destination
 		const bestPile = game.findBestMove(pileIndex, cardIndex);
-		console.log('Best pile found:', bestPile);
 		
 		if (bestPile !== null && bestPile !== pileIndex) {
-			console.log('Auto-moving to pile', bestPile);
 			// Animate the move
 			await animateMove(pileIndex, cardIndex, bestPile);
 		} else {
-			console.log('Just selecting card');
 			// Just select for manual move
 			game.selectCards(pileIndex, cardIndex);
 		}
 	}
 	
 	function handleDragStart(pileIndex: number, cardIndex: number) {
-		console.log('handleDragStart called', { pileIndex, cardIndex });
 		isMouseDragging = true;
 		draggingPileIndex = pileIndex;
 		draggingCardIndex = cardIndex;
@@ -113,7 +105,6 @@
 	}
 	
 	function handleDragEnd() {
-		console.log('handleDragEnd called');
 		// Reset the dragging flag immediately
 		isMouseDragging = false;
 		showDragPreview = false;
@@ -124,21 +115,17 @@
 	}
 	
 	async function handlePileClick(pileIndex: number, skipAnimation = false) {
-		console.log('handlePileClick called', { pileIndex, selectedPile: game.selectedPile, selectedCardIndex: game.selectedCardIndex, skipAnimation });
 		
 		if (game.selectedPile === null || game.selectedCardIndex === null || isMoving) {
-			console.log('Ignoring pile click - no selection or moving');
 			return;
 		}
 		
 		if (game.selectedPile === pileIndex) {
-			console.log('Clearing selection - same pile');
 			game.clearSelection();
 			return;
 		}
 		
 		if (skipAnimation) {
-			console.log('Executing move without animation (drag & drop)');
 			// Temporarily disable animation for both source and target piles
 			const sourcePile = game.selectedPile;
 			pilesWithDisabledAnimation.add(sourcePile);
@@ -154,7 +141,6 @@
 				pilesWithDisabledAnimation = new Set(pilesWithDisabledAnimation); // Trigger reactivity
 			}, 50);
 		} else {
-			console.log('Animating move from pile click');
 			// Animate the move
 			await animateMove(game.selectedPile, game.selectedCardIndex, pileIndex);
 		}
@@ -217,7 +203,7 @@
 		game.moveCards(targetPileIndex);
 		
 		// Animate all cards together
-		const duration = 250; // faster card movement
+		const duration = 100;
 		const startTime = Date.now();
 		
 		const animate = () => {
@@ -301,7 +287,7 @@
 		// Animate each card sequentially
 		for (let i = 0; i < 10; i++) {
 			await animateCard(i);
-			await new Promise(resolve => setTimeout(resolve, 15)); // Faster delay between cards
+			await new Promise(resolve => setTimeout(resolve, 5));
 		}
 		
 		// Clear everything
@@ -312,7 +298,7 @@
 	
 	async function animateCard(index: number) {
 		return new Promise<void>(resolve => {
-			const duration = 150; // faster dealing animation
+			const duration = 80;
 			const startTime = Date.now();
 			
 			const animate = () => {

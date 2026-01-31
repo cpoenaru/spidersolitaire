@@ -28,8 +28,11 @@ export interface GameState {
 }
 
 export interface MoveHistory {
+	type?: 'move' | 'deal';
 	from: number;
 	to: number;
 	cards: Card[];
 	flippedCard?: { pileIndex: number; cardId: string };
+	// For deal operations: store the cards dealt to each pile
+	dealtCards?: Card[][];
 }

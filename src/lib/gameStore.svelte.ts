@@ -1,4 +1,4 @@
-import type { GameState, MoveHistory, Difficulty } from './types';
+import type { GameState, MoveHistory, Difficulty, Card } from './types';
 import { initializeGame, canPlaceCard, getMovableCards, checkForCompletedSequence, dealFromStock, hasValidMoves, findMeaningfulMoves, type MeaningfulMove } from './gameLogic';
 
 class SpiderSolitaireGame {
@@ -240,7 +240,23 @@ class SpiderSolitaireGame {
 	deal() {
 		if (!this.canDeal) return;
 		
+		// Save the cards that will be dealt for undo
+		const dealtCards: Card[][] = [];
+		for (let i = 0; i < 10; i++) {
+			dealtCards.push([{...this.state.stock[i]}]);
+		}
+		
+		// Save the previous state to history
+		const historyEntry: MoveHistory = {
+			type: 'deal',
+			from: -1, // Special value for stock
+			to: -1,
+			cards: [],
+			dealtCards: dealtCards
+		};
+		
 		this.state = dealFromStock(this.state);
+		this.history.push(historyEntry);
 		this.clearSelection();
 		
 		// Check for completed sequences after dealing
@@ -252,6 +268,29 @@ class SpiderSolitaireGame {
 		
 		const lastMove = this.history.pop()!;
 		
+		// Handle undoing a deal operation
+		if (lastMove.type === 'deal' && lastMove.dealtCards) {
+			// Remove the last card from each pile and add them back to stock
+			const newTableau = this.state.tableau.map(pile => ({
+				cards: pile.cards.slice(0, -1).map(card => ({...card}))
+			}));
+			
+			// Reconstruct the stock by adding the dealt cards back to the front
+			const cardsToAddBack = lastMove.dealtCards.flat().map(card => ({...card}));
+			const newStock = [...cardsToAddBack, ...this.state.stock.map(card => ({...card}))];
+			
+			this.state = {
+				...this.state,
+				tableau: newTableau,
+				stock: newStock,
+				moves: this.state.moves - 1
+			};
+			
+			this.clearSelection();
+			return;
+		}
+		
+		// Handle undoing a regular card move
 		// Get cards to move back
 		const targetPile = this.state.tableau[lastMove.to];
 		const cardsToMoveBack = targetPile.cards.slice(-lastMove.cards.length).map(card => ({...card}));

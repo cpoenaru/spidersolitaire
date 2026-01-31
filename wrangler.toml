@@ -1,0 +1,3 @@
+name = "spidersolitaire"
+compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2026-01-31"

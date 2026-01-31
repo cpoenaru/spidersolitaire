@@ -13,7 +13,7 @@
 		selectedPile: number | null;
 		selectedCardIndex: number | null;
 		onCardClick: (pileIndex: number, cardIndex: number, skipAutoMove?: boolean) => void;
-		onPileClick: (pileIndex: number) => void;
+		onPileClick: (pileIndex: number, skipAnimation?: boolean) => void;
 		onMouseDown?: () => void;
 		onDragStart?: (pileIndex: number, cardIndex: number) => void;
 		onDragEnd?: () => void;
@@ -31,6 +31,9 @@
 		return (e: DragEvent) => {
 			currentDragSourcePile = pileIndex;
 			
+			// Add dragging class to body for cursor override
+			document.body.classList.add('dragging');
+			
 			if (e.dataTransfer) {
 				e.dataTransfer.effectAllowed = 'move';
 				e.dataTransfer.setData('application/json', JSON.stringify({
@@ -38,32 +41,10 @@
 					cardIndex
 				}));
 				
-				// Create a container with all cards for drag image
-				const container = document.createElement('div');
-				container.style.position = 'absolute';
-				container.style.top = '-1000px';
-				container.style.width = '85px';
-				document.body.appendChild(container);
-				
-				// Add all cards from this index onwards
-				const cardsToShow = pile.cards.slice(cardIndex);
-				cardsToShow.forEach((card, idx) => {
-					const cardDiv = document.createElement('div');
-					cardDiv.style.position = 'absolute';
-					cardDiv.style.top = `${idx * 35}px`;
-					cardDiv.style.width = '85px';
-					cardDiv.style.height = '130px';
-					cardDiv.style.borderRadius = '8px';
-					cardDiv.style.border = '2px solid #333';
-					cardDiv.style.background = card.faceUp ? '#fff' : '#222';
-					cardDiv.textContent = card.faceUp ? `${card.rank}${card.suit}` : '';
-					container.appendChild(cardDiv);
-				});
-				
-				e.dataTransfer.setDragImage(container, 42, 15);
-				
-				// Clean up after a moment
-				setTimeout(() => document.body.removeChild(container), 0);
+				// Create a transparent 1x1 pixel image to hide default drag ghost
+				const transparentImg = document.createElement('img');
+				transparentImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+				e.dataTransfer.setDragImage(transparentImg, 0, 0);
 			}
 			
 			onDragStart?.(pileIndex, cardIndex);
@@ -71,6 +52,8 @@
 	}
 	
 	function handleDragEndEvent() {
+		// Remove dragging class from body
+		document.body.classList.remove('dragging');
 		// Reset drag state when drag ends
 		currentDragSourcePile = null;
 		onDragEnd?.();
@@ -83,6 +66,7 @@
 	function handleDragOver(e: DragEvent) {
 		e.preventDefault();
 		if (e.dataTransfer) {
+			// Always use 'move' to avoid the "not allowed" cursor
 			e.dataTransfer.dropEffect = 'move';
 		}
 	}
@@ -101,36 +85,14 @@
 				try {
 					const { pileIndex: sourcePile, cardIndex } = JSON.parse(data);
 					if (sourcePile !== pileIndex && typeof sourcePile === 'number' && typeof cardIndex === 'number') {
-						// Validate if this is a legal move
-						const sourceCards = pile.cards.slice(cardIndex);
-						const targetTopCard = pile.cards[pile.cards.length - 1];
-						const firstCardToMove = sourceCards[0];
-						
-						// Check if move is valid
-						let isValidMove = false;
-						if (!targetTopCard) {
-							// Empty pile - always valid
-							isValidMove = true;
-						} else if (firstCardToMove) {
-							// Card must be one rank lower than target
-							const rankValues: Record<string, number> = {
-								'A': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7,
-								'8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13
-							};
-							const targetValue = rankValues[targetTopCard.rank];
-							const cardValue = rankValues[firstCardToMove.rank];
-							isValidMove = cardValue === targetValue - 1;
-						}
-						
-						if (isValidMove) {
-							// Valid move - execute it
-							onDragEnd?.();
-							onCardClick(sourcePile, cardIndex, true);
-							onPileClick(pileIndex);
-						} else {
-							// Invalid move - just end drag (cards return to source)
-							onDragEnd?.();
-						}
+						// Attempt the move - game logic will validate
+						// Skip animation since the visual movement already happened during drag
+						onDragEnd?.();
+						onCardClick(sourcePile, cardIndex, true);
+						onPileClick(pileIndex, true);
+					} else {
+						// Same pile or invalid data
+						onDragEnd?.();
 					}
 				} catch (err) {
 					console.error('Error handling drop:', err);
@@ -216,6 +178,15 @@
 		overflow: visible;
 	}
 	
+	/* Hide default drag cursor */
+	:global(body.dragging) {
+		cursor: grabbing !important;
+	}
+	
+	:global(body.dragging *) {
+		cursor: grabbing !important;
+	}
+	
 	.pile.hint-target {
 		background: rgba(255, 215, 0, 0.1);
 		border: 2px dashed #ffd700;
@@ -247,6 +218,7 @@
 		left: 5px;
 		right: 5px;
 		width: calc(100% - 10px);
+		cursor: grab;
 	}
 	
 	.card-container.hidden {

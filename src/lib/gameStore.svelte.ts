@@ -33,7 +33,7 @@ class SpiderSolitaireGame {
 		this.gameKey = Date.now(); // Update game key to force component recreation
 	}
 	
-	selectCards(pileIndex: number, cardIndex: number) {
+	selectCards(pileIndex: number, cardIndex: number, skipAutoMove: boolean = false) {
 		const pile = this.state.tableau[pileIndex];
 		const card = pile.cards[cardIndex];
 		
@@ -43,6 +43,13 @@ class SpiderSolitaireGame {
 		// Check if we can move these cards
 		const movableCards = getMovableCards(pile, cardIndex);
 		if (movableCards.length === 0) return;
+		
+		// Skip auto-move if explicitly requested (e.g., during drag & drop)
+		if (skipAutoMove) {
+			this.selectedPile = pileIndex;
+			this.selectedCardIndex = cardIndex;
+			return;
+		}
 		
 		// Find best auto-move destination
 		const bestPile = this.findBestMove(pileIndex, cardIndex);
@@ -220,9 +227,18 @@ class SpiderSolitaireGame {
 					id: `${result.suit}-${Date.now()}-${i}`,
 					suit: result.suit
 				});
-				return {
-					cards: pile.cards.slice(0, result.startIndex).map(card => ({...card}))
-				};
+				
+				const remainingCards = pile.cards.slice(0, result.startIndex).map(card => ({...card}));
+				
+				// Flip the new top card if it exists and is face-down
+				if (remainingCards.length > 0 && !remainingCards[remainingCards.length - 1].faceUp) {
+					remainingCards[remainingCards.length - 1] = {
+						...remainingCards[remainingCards.length - 1],
+						faceUp: true
+					};
+				}
+				
+				return { cards: remainingCards };
 			}
 			return { cards: pile.cards.map(card => ({...card})) };
 		});

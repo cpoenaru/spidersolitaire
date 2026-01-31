@@ -33,6 +33,9 @@
 	let draggingPileIndex = $state<number | null>(null);
 	let draggingCardIndex = $state<number | null>(null);
 	
+	// Track piles that should temporarily disable animation (for drag & drop)
+	let pilesWithDisabledAnimation = $state<Set<number>>(new Set());
+	
 	let mouseDownTime = 0;
 	let isMouseDragging = false;
 	let showNewGameConfirm = $state(false);
@@ -67,7 +70,7 @@
 		// If skipAutoMove is true (from drag & drop), just select
 		if (skipAutoMove) {
 			console.log('Just selecting card (skip auto-move)');
-			game.selectCards(pileIndex, cardIndex);
+			game.selectCards(pileIndex, cardIndex, true);
 			return;
 		}
 		
@@ -92,7 +95,7 @@
 		draggingPileIndex = pileIndex;
 		draggingCardIndex = cardIndex;
 		
-		// Set up drag preview
+		// Set up drag preview (our custom overlay)
 		const pile = game.state.tableau[pileIndex];
 		const cardsToMove = pile.cards.slice(cardIndex);
 		dragPreviewCards = cardsToMove;
@@ -120,8 +123,8 @@
 		window.removeEventListener('dragover', handleDragMove);
 	}
 	
-	async function handlePileClick(pileIndex: number) {
-		console.log('handlePileClick called', { pileIndex, selectedPile: game.selectedPile, selectedCardIndex: game.selectedCardIndex });
+	async function handlePileClick(pileIndex: number, skipAnimation = false) {
+		console.log('handlePileClick called', { pileIndex, selectedPile: game.selectedPile, selectedCardIndex: game.selectedCardIndex, skipAnimation });
 		
 		if (game.selectedPile === null || game.selectedCardIndex === null || isMoving) {
 			console.log('Ignoring pile click - no selection or moving');
@@ -134,9 +137,27 @@
 			return;
 		}
 		
-		console.log('Animating move from pile click');
-		// Animate the move
-		await animateMove(game.selectedPile, game.selectedCardIndex, pileIndex);
+		if (skipAnimation) {
+			console.log('Executing move without animation (drag & drop)');
+			// Temporarily disable animation for both source and target piles
+			const sourcePile = game.selectedPile;
+			pilesWithDisabledAnimation.add(sourcePile);
+			pilesWithDisabledAnimation.add(pileIndex);
+			
+			// Execute the move without animation
+			game.moveCards(pileIndex);
+			
+			// Re-enable animations after a short delay (after the state has updated)
+			setTimeout(() => {
+				pilesWithDisabledAnimation.delete(sourcePile);
+				pilesWithDisabledAnimation.delete(pileIndex);
+				pilesWithDisabledAnimation = new Set(pilesWithDisabledAnimation); // Trigger reactivity
+			}, 50);
+		} else {
+			console.log('Animating move from pile click');
+			// Animate the move
+			await animateMove(game.selectedPile, game.selectedCardIndex, pileIndex);
+		}
 	}
 	
 	async function animateMove(sourcePileIndex: number, cardIndex: number, targetPileIndex: number) {
@@ -330,6 +351,14 @@
 		}
 	}
 	
+	function handleGlobalDragOver(e: DragEvent) {
+		// Prevent default to allow drop everywhere and avoid "not allowed" cursor
+		e.preventDefault();
+		if (e.dataTransfer) {
+			e.dataTransfer.dropEffect = 'move';
+		}
+	}
+	
 	onMount(() => {
 		// Clear any residual animation state on mount
 		isMoving = false;
@@ -343,8 +372,12 @@
 		game.gameKey = Date.now();
 		
 		window.addEventListener('keydown', handleKeydown);
+		// Add global dragover handler to prevent "not allowed" cursor
+		window.addEventListener('dragover', handleGlobalDragOver);
+		
 		return () => {
 			window.removeEventListener('keydown', handleKeydown);
+			window.removeEventListener('dragover', handleGlobalDragOver);
 		};
 	});
 	
@@ -523,7 +556,7 @@
 						onDragStart={handleDragStart}
 						onDragEnd={handleDragEnd}
 						hiddenCardIds={hiddenCards}
-						disableAnimation={isTargetPile}
+						disableAnimation={isTargetPile || pilesWithDisabledAnimation.has(pileIndex)}
 						hintCardIndex={hintCardIndex ?? undefined}
 						isHintTarget={isHintTarget}
 						{draggingPileIndex}

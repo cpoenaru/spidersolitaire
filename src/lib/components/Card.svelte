@@ -83,7 +83,7 @@
 <style>
 	.card {
 		width: 100%;
-		height: 130px;
+		height: 160px;
 		border-radius: 8px;
 		border: 2px solid #444;
 		background: #fff;

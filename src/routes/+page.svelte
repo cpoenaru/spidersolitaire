@@ -566,14 +566,14 @@
 					{@const startY = stockRect.top}
 					{@const pile = game.state.tableau[dealCard.targetPile]}
 					{@const lastCardOffset = (pile.cards.length - 1) * 35}
-					{@const endX = pileRect.left + 5}
+					{@const endX = pileRect.left + 3}
 					{@const endY = pileRect.top + lastCardOffset}
 					{@const currentX = startX + (endX - startX) * dealCard.progress}
 					{@const currentY = startY + (endY - startY) * dealCard.progress}
 					{@const shouldFlip = dealCard.progress >= 0.7}
 					<div
 						class="flying-card"
-						style="left: {currentX}px; top: {currentY}px; width: calc({pileRect.width}px - 10px); opacity: {dealCard.progress < 0.1 ? dealCard.progress * 10 : 1};"
+						style="left: {currentX}px; top: {currentY}px; width: calc({pileRect.width}px - 6px); opacity: {dealCard.progress < 0.1 ? dealCard.progress * 10 : 1};"
 					>
 						<Card
 							suit={dealCard.card.suit}
@@ -596,17 +596,17 @@
 				{@const targetRect = targetPileEl?.getBoundingClientRect()}
 				{#if sourceRect && targetRect}
 					{@const sourceCardOffset = flyingCard.sourceIndex * 35}
-					{@const startX = sourceRect.left + 5}
+					{@const startX = sourceRect.left + 3}
 					{@const startY = sourceRect.top + sourceCardOffset}
 					
-					{@const endX = targetRect.left + 5}
+					{@const endX = targetRect.left + 3}
 					{@const endY = targetRect.top + flyingCard.targetOffset}
 					
 					{@const currentX = startX + (endX - startX) * flyingCard.progress}
 					{@const currentY = startY + (endY - startY) * flyingCard.progress}
 					<div
 						class="flying-card"
-						style="left: {currentX}px; top: {currentY}px; width: calc({sourceRect.width}px - 10px); z-index: {1000 + idx};"
+						style="left: {currentX}px; top: {currentY}px; width: calc({sourceRect.width}px - 6px); z-index: {1000 + idx};"
 					>
 						<Card
 							suit={flyingCard.card.suit}
@@ -623,7 +623,7 @@
 		{#if showDragPreview && dragPreviewCards.length > 0}
 			<div
 				class="drag-preview"
-				style="left: {dragPreviewX - 42}px; top: {dragPreviewY - 15}px;"
+				style="left: {dragPreviewX - 55}px; top: {dragPreviewY - 15}px;"
 			>
 				{#each dragPreviewCards as card, idx}
 					<div class="drag-preview-card" style="top: {idx * 35}px;">
@@ -653,9 +653,9 @@
 	}
 	
 	.game-container {
-		max-width: 1200px;
+		max-width: 1400px;
 		margin: 0 auto;
-		padding: 15px;
+		padding: 20px 15px;
 		position: relative;
 		overflow: visible;
 	}
@@ -682,8 +682,8 @@
 	}
 	
 	.stock-pile {
-		width: 80px;
-		height: 110px;
+		width: 100px;
+		height: 140px;
 		position: relative;
 		border: 2px solid #333;
 		border-radius: 8px;
@@ -753,15 +753,15 @@
 	}
 	
 	.completed-card {
-		width: 70px;
-		height: 95px;
+		width: 90px;
+		height: 125px;
 		border: 2px solid #333;
 		border-radius: 8px;
 		background: #1a1a1a;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 36px;
+		font-size: 48px;
 	}
 	
 	.completed-card.empty {
@@ -991,9 +991,9 @@
 	.tableau {
 		display: flex;
 		justify-content: space-between;
-		gap: 10px;
+		gap: 8px;
 		margin-top: 20px;
-		min-height: 600px;
+		min-height: 700px;
 		overflow: visible;
 	}
 	
@@ -1014,7 +1014,7 @@
 	
 	.flying-card {
 		position: absolute;
-		height: 130px;
+		height: 160px;
 		transition: opacity 0.1s;
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 		box-sizing: border-box;
@@ -1285,9 +1285,9 @@
 		}
 		
 		.completed-card {
-			width: 50px;
-			height: 70px;
-			font-size: 24px;
+			width: 65px;
+			height: 90px;
+			font-size: 32px;
 		}
 	}
 	
@@ -1305,14 +1305,14 @@
 		position: fixed;
 		pointer-events: none;
 		z-index: 10000;
-		width: 85px;
+		width: 110px;
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 	}
 	
 	.drag-preview-card {
 		position: absolute;
 		left: 0;
-		width: 85px;
-		height: 130px;
+		width: 110px;
+		height: 160px;
 	}
 </style>

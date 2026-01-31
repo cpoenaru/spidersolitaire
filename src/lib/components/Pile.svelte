@@ -167,12 +167,11 @@
 <style>
 	.pile {
 		position: relative;
-		min-height: 150px;
+		min-height: 160px;
 		width: 100%;
-		min-width: 85px;
-		max-width: 140px;
+		min-width: 110px;
+		max-width: 120px;
 		flex: 1 1 auto;
-		background: #0a0a0a;
 		border-radius: 8px;
 		cursor: pointer;
 		overflow: visible;
@@ -208,16 +207,20 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		height: 150px;
+		height: 160px;
+		background: #1a1a1a;
+		border: 2px solid #333;
+		border-radius: 8px;
+		margin: 0 3px;
 		color: #444;
 		font-size: 14px;
 	}
 	
 	.card-container {
 		position: absolute;
-		left: 5px;
-		right: 5px;
-		width: calc(100% - 10px);
+		left: 3px;
+		right: 3px;
+		width: calc(100% - 6px);
 		cursor: grab;
 	}
 	

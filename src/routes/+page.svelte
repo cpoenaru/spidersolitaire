@@ -411,6 +411,9 @@
 	<meta name="application-name" content="Spider Solitaire" />
 	<meta name="apple-mobile-web-app-title" content="Spider Solitaire" />
 	<link rel="alternate" hreflang="en" href="https://spidersolitaire.cosmin.cc/" />
+
+	<!-- Google Search Console -->
+	<meta name="google-site-verification" content="rdN_Z5XRtvis60749amJ0Tw1Q8VNobvIA5qkwv5p6GQ" />
 	
 	<!-- JSON-LD Structured Data -->
 	{@html `<script type="application/ld+json">

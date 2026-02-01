@@ -1,4 +1,4 @@
-import type { GameState, MoveHistory, Difficulty, Card } from './types';
+import type { GameState, MoveHistory, Difficulty, Card, Suit } from './types';
 import { initializeGame, canPlaceCard, getMovableCards, checkForCompletedSequence, dealFromStock, hasValidMoves, findMeaningfulMoves, type MeaningfulMove } from './gameLogic';
 
 class SpiderSolitaireGame {
@@ -216,27 +216,49 @@ class SpiderSolitaireGame {
 	checkCompletedSequences() {
 		const newCompletedSequences = [...this.state.completedSequences];
 		let hasChanges = false;
+		const completedThisCheck: Array<{ pileIndex: number; cards: Card[]; suit: Suit; flippedCard?: { cardId: string } }> = [];
 		
 		// Deep clone ALL piles to ensure complete immutability
 		const newTableau = this.state.tableau.map((pile, i) => {
 			const result = checkForCompletedSequence(pile);
 			if (result.completed && result.suit) {
 				hasChanges = true;
-				// Remove the completed sequence - deep clone remaining cards
-				newCompletedSequences.push({
-					id: `${result.suit}-${Date.now()}-${i}`,
-					suit: result.suit
-				});
+				
+				// Save the cards that will be removed (for undo)
+				const completedCards = pile.cards.slice(result.startIndex, result.startIndex + 13).map(card => ({...card}));
 				
 				const remainingCards = pile.cards.slice(0, result.startIndex).map(card => ({...card}));
 				
+				// Track if a card was flipped
+				let flippedCardId: string | undefined;
+				
 				// Flip the new top card if it exists and is face-down
 				if (remainingCards.length > 0 && !remainingCards[remainingCards.length - 1].faceUp) {
+					flippedCardId = remainingCards[remainingCards.length - 1].id;
 					remainingCards[remainingCards.length - 1] = {
 						...remainingCards[remainingCards.length - 1],
 						faceUp: true
 					};
 				}
+				
+				// Push the completed sequence info with optional flipped card
+				const completedInfo: { pileIndex: number; cards: Card[]; suit: Suit; flippedCard?: { cardId: string } } = {
+					pileIndex: i,
+					cards: completedCards,
+					suit: result.suit
+				};
+				
+				if (flippedCardId) {
+					completedInfo.flippedCard = { cardId: flippedCardId };
+				}
+				
+				completedThisCheck.push(completedInfo);
+				
+				// Remove the completed sequence - deep clone remaining cards
+				newCompletedSequences.push({
+					id: `${result.suit}-${Date.now()}-${i}`,
+					suit: result.suit
+				});
 				
 				return { cards: remainingCards };
 			}
@@ -250,6 +272,11 @@ class SpiderSolitaireGame {
 				completedSequences: newCompletedSequences,
 				gameWon: newCompletedSequences.length === 8
 			};
+			
+			// If we have history, attach the completed sequences to the last move
+			if (this.history.length > 0 && completedThisCheck.length > 0) {
+				this.history[this.history.length - 1].completedSequences = completedThisCheck;
+			}
 		}
 	}
 	
@@ -286,9 +313,37 @@ class SpiderSolitaireGame {
 		
 		// Handle undoing a deal operation
 		if (lastMove.type === 'deal' && lastMove.dealtCards) {
-			// Remove the last card from each pile and add them back to stock
-			const newTableau = this.state.tableau.map(pile => ({
-				cards: pile.cards.slice(0, -1).map(card => ({...card}))
+			// First, restore any completed sequences from this move (if any)
+			let newCompletedSequences = [...this.state.completedSequences];
+			let newTableau = this.state.tableau.map(pile => ({ cards: pile.cards.map(card => ({...card})) }));
+			
+			if (lastMove.completedSequences && lastMove.completedSequences.length > 0) {
+				// Remove the completed sequences that were added during this move
+				newCompletedSequences = newCompletedSequences.slice(0, -(lastMove.completedSequences.length));
+				
+				// Add the cards back to their piles (before we remove the dealt cards)
+				newTableau = newTableau.map((pile, idx) => {
+					const restored = lastMove.completedSequences?.find(cs => cs.pileIndex === idx);
+					if (restored) {
+						let cards = [...pile.cards, ...restored.cards];
+						
+						// If the top card before the restored sequence was flipped, flip it back
+						if (restored.flippedCard) {
+							const cardIdx = cards.findIndex(c => c.id === restored.flippedCard!.cardId);
+							if (cardIdx !== -1) {
+								cards[cardIdx] = {...cards[cardIdx], faceUp: false};
+							}
+						}
+						
+						return { cards };
+					}
+					return pile;
+				});
+			}
+			
+			// Now remove the dealt cards from each pile
+			newTableau = newTableau.map(pile => ({
+				cards: pile.cards.slice(0, -1)
 			}));
 			
 			// Reconstruct the stock by adding the dealt cards back to the front
@@ -299,6 +354,8 @@ class SpiderSolitaireGame {
 				...this.state,
 				tableau: newTableau,
 				stock: newStock,
+				completedSequences: newCompletedSequences,
+				gameWon: newCompletedSequences.length === 8,
 				moves: this.state.moves - 1
 			};
 			
@@ -307,22 +364,63 @@ class SpiderSolitaireGame {
 		}
 		
 		// Handle undoing a regular card move
-		// Get cards to move back
-		const targetPile = this.state.tableau[lastMove.to];
-		const cardsToMoveBack = targetPile.cards.slice(-lastMove.cards.length).map(card => ({...card}));
 		
-		// Deep clone ALL piles to ensure complete immutability
-		const newTableau = this.state.tableau.map((pile, idx) => {
+		// First, restore any completed sequences from this move (before undoing the card movement)
+		let newCompletedSequences = [...this.state.completedSequences];
+		let newTableau = this.state.tableau.map(pile => ({ cards: pile.cards.map(card => ({...card})) }));
+		
+		if (lastMove.completedSequences && lastMove.completedSequences.length > 0) {
+			// Remove the completed sequences that were added during this move
+			newCompletedSequences = newCompletedSequences.slice(0, -(lastMove.completedSequences.length));
+			
+			// Add the cards back to their piles
+			newTableau = newTableau.map((pile, idx) => {
+				const restored = lastMove.completedSequences?.find(cs => cs.pileIndex === idx);
+				if (restored) {
+					let cards = [...pile.cards, ...restored.cards];
+					
+					// If the top card before the restored sequence was flipped, flip it back
+					if (restored.flippedCard) {
+						const cardIdx = cards.findIndex(c => c.id === restored.flippedCard!.cardId);
+						if (cardIdx !== -1) {
+							cards[cardIdx] = {...cards[cardIdx], faceUp: false};
+						}
+					}
+					
+					return { cards };
+				}
+				return pile;
+			});
+		}
+		
+		// Now undo the card move - use the ORIGINAL card IDs to find them in the target pile
+		// (in case a completed sequence was restored, we need to find the specific cards that were moved)
+		const movedCardIds = lastMove.cards.map(c => c.id);
+		const targetPile = newTableau[lastMove.to];
+		
+		// Find the moved cards by their IDs and extract them
+		const cardsToMoveBack: Card[] = [];
+		const remainingTargetCards: Card[] = [];
+		
+		for (const card of targetPile.cards) {
+			if (movedCardIds.includes(card.id) && cardsToMoveBack.length < lastMove.cards.length) {
+				cardsToMoveBack.push({...card});
+			} else {
+				remainingTargetCards.push({...card});
+			}
+		}
+		
+		newTableau = newTableau.map((pile, idx) => {
 			if (idx === lastMove.to) {
-				// Remove cards from target
+				// Remove the moved cards from target
 				return {
-					cards: pile.cards.slice(0, -lastMove.cards.length).map(card => ({...card}))
+					cards: remainingTargetCards
 				};
 			} else if (idx === lastMove.from) {
 				// Add cards back to source
-				let cards = [...pile.cards.map(card => ({...card})), ...cardsToMoveBack];
+				let cards = [...pile.cards, ...cardsToMoveBack];
 				
-				// Flip the card back if it was flipped
+				// Flip the card back if it was flipped during the original move
 				if (lastMove.flippedCard && lastMove.flippedCard.pileIndex === idx) {
 					const cardIndex = cards.findIndex(c => c.id === lastMove.flippedCard!.cardId);
 					if (cardIndex !== -1) {
@@ -332,13 +430,15 @@ class SpiderSolitaireGame {
 				
 				return { cards };
 			} else {
-				return { cards: pile.cards.map(card => ({...card})) };
+				return pile;
 			}
 		});
 		
 		this.state = {
 			...this.state,
 			tableau: newTableau,
+			completedSequences: newCompletedSequences,
+			gameWon: newCompletedSequences.length === 8,
 			moves: this.state.moves - 1
 		};
 		

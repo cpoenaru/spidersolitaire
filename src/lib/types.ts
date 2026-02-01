@@ -35,4 +35,6 @@ export interface MoveHistory {
 	flippedCard?: { pileIndex: number; cardId: string };
 	// For deal operations: store the cards dealt to each pile
 	dealtCards?: Card[][];
+	// For tracking completed sequences that were removed during this move
+	completedSequences?: Array<{ pileIndex: number; cards: Card[]; suit: Suit; flippedCard?: { cardId: string } }>;
 }

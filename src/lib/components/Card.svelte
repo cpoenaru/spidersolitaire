@@ -102,10 +102,6 @@
 		transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
 	}
 	
-	.card:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7), 0 3px 6px rgba(0, 0, 0, 0.5);
-	}
 	
 	.card.face-down {
 		background: #1a1a1a;

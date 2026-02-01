@@ -636,7 +636,8 @@
 		<div class="dealing-overlay">
 			{#each dealingCards as dealCard (dealCard.id)}
 				{@const stockEl = document.getElementById('stock-pile')}
-				{@const pileEl = document.getElementById(`pile-${dealCard.targetPile}`)}
+				{@const pileWrapperEl = document.getElementById(`pile-${dealCard.targetPile}`)}
+				{@const pileEl = pileWrapperEl?.querySelector('.pile')}
 				{@const stockRect = stockEl?.getBoundingClientRect()}
 				{@const pileRect = pileEl?.getBoundingClientRect()}
 				{#if stockRect && pileRect}
@@ -668,8 +669,10 @@
 	{#if isMoving && flyingCards.length > 0}
 		<div class="dealing-overlay">
 			{#each flyingCards as flyingCard, idx (flyingCard.id)}
-				{@const sourcePileEl = document.getElementById(`pile-${flyingCard.sourcePile}`)}
-				{@const targetPileEl = document.getElementById(`pile-${flyingCard.targetPile}`)}
+				{@const sourcePileWrapperEl = document.getElementById(`pile-${flyingCard.sourcePile}`)}
+				{@const targetPileWrapperEl = document.getElementById(`pile-${flyingCard.targetPile}`)}
+				{@const sourcePileEl = sourcePileWrapperEl?.querySelector('.pile')}
+				{@const targetPileEl = targetPileWrapperEl?.querySelector('.pile')}
 				{@const sourceRect = sourcePileEl?.getBoundingClientRect()}
 				{@const targetRect = targetPileEl?.getBoundingClientRect()}
 				{#if sourceRect && targetRect}

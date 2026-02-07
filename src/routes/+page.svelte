@@ -382,40 +382,7 @@
 </script>
 
 <svelte:head>
-	<!-- Primary Meta Tags -->
-	<title>Spider Solitaire - Free Online Card Game | Play Now</title>
-	<meta name="title" content="Spider Solitaire - Free Online Card Game | Play Now" />
-	<meta name="description" content="Play Spider Solitaire online for free! Classic card game with 1, 2, or 4 suit modes. Features smooth animations, hints, undo, and works perfectly on mobile. No downloads or registration required." />
-	<meta name="keywords" content="spider solitaire, solitaire, card game, free games, online games, patience, klondike, spider solitaire free, spider solitaire online, card games" />
-	<meta name="author" content="Cosmin" />
-	
-	<!-- Open Graph / Facebook -->
-	<meta property="og:type" content="website" />
-	<meta property="og:url" content="https://spidersolitaire.cosmin.cc/" />
-	<meta property="og:title" content="Spider Solitaire - Free Online Card Game" />
-	<meta property="og:description" content="Play Spider Solitaire online for free! Choose from 1, 2, or 4 suit difficulty modes. Smooth animations, hints, and undo features. Perfect for mobile and desktop." />
-	<meta property="og:image" content="https://spidersolitaire.cosmin.cc/web-app-manifest-512x512.png" />
-	<meta property="og:image:width" content="512" />
-	<meta property="og:image:height" content="512" />
-	<meta property="og:site_name" content="Spider Solitaire" />
-	<meta property="og:locale" content="en_US" />
-	
-	<!-- Twitter Card -->
-	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:url" content="https://spidersolitaire.cosmin.cc/" />
-	<meta name="twitter:title" content="Spider Solitaire - Free Online Card Game" />
-	<meta name="twitter:description" content="Play Spider Solitaire online for free! Choose from 1, 2, or 4 suit difficulty modes. Perfect for mobile and desktop." />
-	<meta name="twitter:image" content="https://spidersolitaire.cosmin.cc/web-app-manifest-512x512.png" />
-	
-	<!-- Additional SEO Tags -->
-	<meta name="application-name" content="Spider Solitaire" />
-	<meta name="apple-mobile-web-app-title" content="Spider Solitaire" />
-	<link rel="alternate" hreflang="en" href="https://spidersolitaire.cosmin.cc/" />
-
-	<!-- Google Search Console -->
-	<meta name="google-site-verification" content="rdN_Z5XRtvis60749amJ0Tw1Q8VNobvIA5qkwv5p6GQ" />
-	
-	<!-- JSON-LD Structured Data -->
+	<!-- JSON-LD Structured Data for search engines -->
 	{@html `<script type="application/ld+json">
 	{
 		"@context": "https://schema.org",
